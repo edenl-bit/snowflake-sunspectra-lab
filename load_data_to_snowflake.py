@@ -124,8 +124,15 @@ def main():
 
     conn, database, default_schema = get_connection()
 
-    # Multi-schema: data/SCHEMA_NAME/*.csv → create each schema and load its tables
+    # Multi-schema: data/SCHEMA_NAME/*.csv → create each schema and load its tables (509 tables)
     schema_dirs = sorted(d for d in data_dir.iterdir() if d.is_dir())
+    if not schema_dirs:
+        csv_files_flat = sorted(data_dir.glob("*.csv"))
+        if not csv_files_flat:
+            raise SystemExit(
+                "No data in data/. Export first: set SNOWFLAKE_EXPORT_ALL_SCHEMAS=1 in .env, "
+                "then run python export_snowflake_to_csv.py. See data/README.md and SCHEMAS_REFERENCE.md."
+            )
     if schema_dirs:
         total_tables = 0
         for schema_path in schema_dirs:
@@ -148,11 +155,9 @@ def main():
                 total_tables += 1
         print(f"Done. Loaded {total_tables} tables across {len(schema_dirs)} schemas.")
     else:
-        # Single-schema: data/*.csv → use SNOWFLAKE_SCHEMA from .env
+        # Flat data/*.csv (legacy): use SNOWFLAKE_SCHEMA from .env
         ensure_schema(conn, database, default_schema)
         csv_files = sorted(data_dir.glob("*.csv"))
-        if not csv_files:
-            raise SystemExit("No CSV files in data/. Put CSVs in data/ or in data/SCHEMA_NAME/ per schema.")
         for csv_path in csv_files:
             table_name = csv_path.stem
             ddl_path = schema_dir / f"{table_name}.sql"

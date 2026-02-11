@@ -1,6 +1,6 @@
 # Schemas reference — 509 tables across 15 schemas
 
-**Total: 509 tables across 15 schemas.** When loading into **your own Snowflake environment**, you can load either the 8-table SunSpectra lab (single schema) or all 509 tables (all schemas below).
+**Total: 509 tables across 15 schemas.** Export from your source Snowflake, then load into your own.
 
 | Schema              | # Tables |
 |---------------------|----------|
@@ -21,11 +21,14 @@
 | SHIPBOB              | 33       |
 | ZENDESK              | 29       |
 
-**Load all 509 tables into your Snowflake**
+**Export (source Snowflake)**
 
-1. **Export** (from the Snowflake that has these tables): In `.env` set `SNOWFLAKE_EXPORT_ALL_SCHEMAS=1`, then run `python export_snowflake_to_csv.py`. This writes `data/SCHEMA_NAME/TABLE_NAME.csv` for every schema.
-2. **Load** (into your own Snowflake): Point `.env` at your account/database, then run `python load_data_to_snowflake.py`. The loader sees `data/ANALYTICS/`, `data/CUSTOMER/`, etc., creates each schema in your database, and loads all tables.
+1. In `.env` set `SNOWFLAKE_EXPORT_ALL_SCHEMAS=1` and your source Snowflake connection.
+2. Run: `python export_snowflake_to_csv.py`  
+   This writes `data/SCHEMA_NAME/TABLE_NAME.csv` for every schema.
 
-**Load only the 8 SunSpectra tables (single schema)**
+**Load (your Snowflake)**
 
-Use flat `data/*.csv` (no subdirs). Set `SNOWFLAKE_DATABASE` and `SNOWFLAKE_SCHEMA` in `.env`. Run `python load_data_to_snowflake.py`; the loader puts all 8 tables in that schema.
+1. Point `.env` at your target account/database.
+2. Run: `python load_data_to_snowflake.py`  
+   The loader creates each schema in your database and loads all 509 tables.

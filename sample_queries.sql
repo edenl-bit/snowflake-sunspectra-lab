@@ -1,6 +1,6 @@
--- All SunSpectra active queries and the complex query.
--- Run these in Snowflake (Worksheets or your client) after load_data_to_snowflake.py.
--- Same queries are listed in README "Verify and query" section.
+-- Sample queries (509-table lab).
+-- Run in Snowflake Worksheets after loading the 509 tables. Use the schema that has these tables (e.g. PUBLIC).
+-- Listed in README "Sample queries" section.
 
 -- Row counts per table
 SELECT 'CUSTOMER' AS table_name, COUNT(*) AS row_count FROM CUSTOMER

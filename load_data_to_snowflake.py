@@ -15,7 +15,7 @@ load_dotenv(_script_dir.parent / ".env")
 
 
 def get_connection():
-    """Connect to Snowflake using env vars only."""
+    """Connect to Snowflake using env vars only. Use a PAT as SNOWFLAKE_PASSWORD (not your account password)."""
     account = os.getenv("SNOWFLAKE_ACCOUNT")
     user = os.getenv("SNOWFLAKE_USER")
     password = os.getenv("SNOWFLAKE_PASSWORD")

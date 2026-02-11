@@ -16,7 +16,7 @@ load_dotenv(_script_dir / ".env")
 load_dotenv(_script_dir.parent / ".env")
 
 def get_connection():
-    """Build connection params from environment. No credentials in code."""
+    """Build connection params from environment. Use a PAT as SNOWFLAKE_PASSWORD (not your account password)."""
     account = os.getenv("SNOWFLAKE_ACCOUNT")
     user = os.getenv("SNOWFLAKE_USER")
     password = os.getenv("SNOWFLAKE_PASSWORD")

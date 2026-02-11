@@ -1,5 +1,5 @@
--- Sample queries to verify the lab after loading data.
--- Run these in Snowflake (Worksheets or your client) after load_data_to_snowflake.py.
+-- Sample active queries to verify the lab after loading data.
+-- Run these as active queries in Snowflake (Worksheets or your client) after load_data_to_snowflake.py.
 -- Replace YOUR_SCHEMA with your actual schema name if needed, or use the schema you set in .env.
 
 -- Row counts per table
@@ -25,3 +25,21 @@ SELECT C_CUSTKEY, C_NAME, C_ACCTBAL
 FROM CUSTOMER
 ORDER BY C_ACCTBAL DESC
 LIMIT 10;
+
+-- ---------------------------------------------------------------------------
+-- Complex query: revenue by region (SunSpectra)
+-- Joins ORDERS, LINEITEM, CUSTOMER, NATION, REGION for regional revenue.
+-- ---------------------------------------------------------------------------
+SELECT
+  r.R_NAME AS region_name,
+  n.N_NAME AS nation_name,
+  COUNT(DISTINCT o.O_ORDERKEY) AS order_count,
+  SUM(l.L_EXTENDEDPRICE * (1 - l.L_DISCOUNT)) AS revenue
+FROM REGION r
+JOIN NATION n ON r.R_REGIONKEY = n.N_REGIONKEY
+JOIN CUSTOMER c ON c.C_NATIONKEY = n.N_NATIONKEY
+JOIN ORDERS o ON o.O_CUSTKEY = c.C_CUSTKEY
+JOIN LINEITEM l ON l.L_ORDERKEY = o.O_ORDERKEY
+WHERE o.O_ORDERSTATUS = 'F'
+GROUP BY r.R_NAME, n.N_NAME
+ORDER BY region_name, nation_name;

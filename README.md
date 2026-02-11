@@ -47,12 +47,11 @@ Done. Tables (CUSTOMER, LINEITEM, NATION, ORDERS, PART, PARTSUPP, REGION, SUPPLI
 
 ## Verify and query
 
-After loading, run SQL in Snowflake Worksheets (or any client). Examples:
+After loading, run SQL in Snowflake Worksheets (or any client). All of the following are in `sample_queries.sql`—copy and run in Snowflake.
 
-**Active query (verification)** — run this in Snowflake to confirm the lab is loaded:
+**Active query 1: Row counts per table** — verify the lab is loaded:
 
 ```sql
--- Row counts per table (active query)
 SELECT 'CUSTOMER' AS table_name, COUNT(*) AS row_count FROM CUSTOMER
 UNION ALL SELECT 'LINEITEM', COUNT(*) FROM LINEITEM
 UNION ALL SELECT 'NATION', COUNT(*) FROM NATION
@@ -64,7 +63,26 @@ UNION ALL SELECT 'SUPPLIER', COUNT(*) FROM SUPPLIER
 ORDER BY table_name;
 ```
 
-**Complex query (SunSpectra)** — revenue by region, joining ORDERS, LINEITEM, CUSTOMER, NATION, and REGION:
+**Active query 2: Regions and nation count** — nations per region:
+
+```sql
+SELECT R_NAME, COUNT(*) AS nations
+FROM REGION r
+JOIN NATION n ON r.R_REGIONKEY = n.N_REGIONKEY
+GROUP BY R_NAME
+ORDER BY R_NAME;
+```
+
+**Active query 3: Sample from CUSTOMER** — top 10 customers by account balance:
+
+```sql
+SELECT C_CUSTKEY, C_NAME, C_ACCTBAL
+FROM CUSTOMER
+ORDER BY C_ACCTBAL DESC
+LIMIT 10;
+```
+
+**Complex query (SunSpectra): Revenue by region** — joins ORDERS, LINEITEM, CUSTOMER, NATION, REGION:
 
 ```sql
 SELECT
@@ -81,8 +99,6 @@ WHERE o.O_ORDERSTATUS = 'F'
 GROUP BY r.R_NAME, n.N_NAME
 ORDER BY region_name, nation_name;
 ```
-
-All of these are in `sample_queries.sql`—copy and run in Snowflake.
 
 ## Project structure
 

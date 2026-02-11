@@ -25,7 +25,7 @@ Load Snowflake tables and queries into **your own** Snowflake. Use the 8-table l
 |------|-------------|
 | **Goal** | Get lab data (8 tables or 509 tables) into **your** Snowflake so you can run queries. |
 | **Auth** | Use a **programmatic access token (PAT)** in `.env`—not your account password. |
-| **Credentials** | None stored in the repo; you use your own account, database, and schema. |
+| **Credentials** | None stored in the repo; you use your own account, database, and schema. **`.env` is gitignored—your `.env` never gets committed.** |
 
 **In one sentence:** Clone → copy `.env` and add your Snowflake PAT + database/schema → run the loader → run SQL in Snowflake.
 

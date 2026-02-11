@@ -2,6 +2,7 @@
 """
 Create schema/tables (from schema/*.sql or inferred from CSV) and load all data/*.csv
 into your Snowflake. Uses only environment variables from .env; no hardcoded credentials.
+Does not add Semantic Model Configuration—tables and data only.
 """
 import os
 import csv

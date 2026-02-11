@@ -26,6 +26,7 @@ Load **509 tables across 15 schemas** into **your own** Snowflake. Export from a
 | **Flow** | 1) Export from source Snowflake → `data/SCHEMA_NAME/TABLE.csv`. 2) Load into your Snowflake. |
 | **Auth** | Use a **programmatic access token (PAT)** in `.env`—not your account password. |
 | **Credentials** | The repo contains **only `env.example`**. Copy it to `.env` locally and fill in your values; `.env` is not in the repo. |
+| **Scope** | Tables and data only. **Semantic Model Configuration is not added** by this repo. |
 
 **In one sentence:** Clone → copy `env.example` to `.env` → export from source (509 tables) → load into your Snowflake.
 
@@ -129,6 +130,7 @@ snowflake-sunspectra-lab/
 ├── sample_queries.sql        ← Queries to run after loading
 ├── load_data_to_snowflake.py ← Load data/ into your Snowflake (509 tables)
 ├── export_snowflake_to_csv.py← Export from Snowflake (set SNOWFLAKE_EXPORT_ALL_SCHEMAS=1)
+├── generate_tasks.py         ← Create Snowflake Tasks (scheduled SQL). Edit TASK_DEFINITIONS to customize.
 ├── connect_snowflake.py      ← Test connection
 └── list_tables.py            ← List tables in a database (optional)
 ```
@@ -138,6 +140,7 @@ snowflake-sunspectra-lab/
 | **Setup** | `env.example` | **Only** env file in the repo. Copy to `.env` locally. |
 | **Export** | `export_snowflake_to_csv.py` | Export 509 tables from Snowflake into `data/SCHEMA_NAME/`. Set `SNOWFLAKE_EXPORT_ALL_SCHEMAS=1`. |
 | **Load** | `load_data_to_snowflake.py` | Load `data/` (509 tables, 15 schemas) into your Snowflake. |
+| **Tasks** | `generate_tasks.py` | Create Snowflake Tasks (scheduled SQL). Edit `TASK_DEFINITIONS` in the script to add or change tasks. |
 | **Verify** | `connect_snowflake.py` | Test that your local `.env` and PAT work. |
 | **Verify** | `sample_queries.sql` | Queries to run after loading. |
 | **Reference** | `SCHEMAS_REFERENCE.md` | Schema list (15 schemas, 509 tables) and export/load steps. |
@@ -150,3 +153,4 @@ snowflake-sunspectra-lab/
 - **Credentials:** The repo has **only `env.example`**. Copy it to `.env` locally; `.env` is gitignored.
 - **PAT:** Snowsight → **Governance & security** → **Users & roles** → your user → **Programmatic access tokens** → **Generate new token**. Put the token in `SNOWFLAKE_PASSWORD`.
 - **509 tables / 15 schemas:** See [SCHEMAS_REFERENCE.md](SCHEMAS_REFERENCE.md) for schema names and step-by-step export/load.
+- **Semantic Model Configuration:** Not used. This repo only creates/loads tables and data; it does not add or configure Semantic Models.

@@ -130,7 +130,9 @@ snowflake-sunspectra-lab/
 ├── sample_queries.sql        ← Queries to run after loading
 ├── load_data_to_snowflake.py ← Load data/ into your Snowflake (509 tables)
 ├── export_snowflake_to_csv.py← Export from Snowflake (set SNOWFLAKE_EXPORT_ALL_SCHEMAS=1)
-├── generate_tasks.py         ← Create Snowflake Tasks (scheduled SQL). Edit TASK_DEFINITIONS to customize.
+├── tasks/                    ← Exported task DDL (tasks.sql). See tasks/README.md.
+├── export_tasks_from_snowflake.py ← Export existing tasks from Snowflake → tasks/tasks.sql
+├── generate_tasks.py         ← Create/duplicate tasks: runs tasks/tasks.sql if present, else TASK_DEFINITIONS
 ├── connect_snowflake.py      ← Test connection
 └── list_tables.py            ← List tables in a database (optional)
 ```
@@ -140,7 +142,8 @@ snowflake-sunspectra-lab/
 | **Setup** | `env.example` | **Only** env file in the repo. Copy to `.env` locally. |
 | **Export** | `export_snowflake_to_csv.py` | Export 509 tables from Snowflake into `data/SCHEMA_NAME/`. Set `SNOWFLAKE_EXPORT_ALL_SCHEMAS=1`. |
 | **Load** | `load_data_to_snowflake.py` | Load `data/` (509 tables, 15 schemas) into your Snowflake. |
-| **Tasks** | `generate_tasks.py` | Create Snowflake Tasks (scheduled SQL). Edit `TASK_DEFINITIONS` in the script to add or change tasks. |
+| **Tasks** | `export_tasks_from_snowflake.py` | Export existing tasks from your Snowflake to `tasks/tasks.sql`. |
+| **Tasks** | `generate_tasks.py` | Duplicate tasks: runs `tasks/tasks.sql` if present (same as your Snowflake), else creates from `TASK_DEFINITIONS`. |
 | **Verify** | `connect_snowflake.py` | Test that your local `.env` and PAT work. |
 | **Verify** | `sample_queries.sql` | Queries to run after loading. |
 | **Reference** | `SCHEMAS_REFERENCE.md` | Schema list (15 schemas, 509 tables) and export/load steps. |
@@ -153,4 +156,5 @@ snowflake-sunspectra-lab/
 - **Credentials:** The repo has **only `env.example`**. Copy it to `.env` locally; `.env` is gitignored.
 - **PAT:** Snowsight → **Governance & security** → **Users & roles** → your user → **Programmatic access tokens** → **Generate new token**. Put the token in `SNOWFLAKE_PASSWORD`.
 - **509 tables / 15 schemas:** See [SCHEMAS_REFERENCE.md](SCHEMAS_REFERENCE.md) for schema names and step-by-step export/load.
+- **Duplicate tasks:** Run `python export_tasks_from_snowflake.py` (from Snowflake with the tasks) → then `python generate_tasks.py` (in same or another Snowflake). See `tasks/README.md`.
 - **Semantic Model Configuration:** Not used. This repo only creates/loads tables and data; it does not add or configure Semantic Models.

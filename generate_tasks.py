@@ -3,7 +3,8 @@
 Generate and create Snowflake Tasks (scheduled SQL). Uses .env for connection.
 Run: python generate_tasks.py
 
-Tasks are created in the database/schema from .env. Edit TASK_DEFINITIONS below to add or change tasks.
+If tasks/tasks.sql exists (from export_tasks_from_snowflake.py), runs that DDL to duplicate tasks.
+Otherwise creates tasks from TASK_DEFINITIONS below. Edit TASK_DEFINITIONS to add or change tasks.
 Does not add Semantic Model Configuration—tasks run plain SQL only.
 """
 import os
@@ -79,11 +80,41 @@ def generate_task_sql(database: str, schema: str, warehouse: str, task_name: str
     )
 
 
+def run_tasks_sql_file(conn, tasks_file: Path) -> bool:
+    """Execute SQL statements from tasks/tasks.sql (from export_tasks_from_snowflake.py). Returns True if ran."""
+    if not tasks_file.exists():
+        return False
+    content = tasks_file.read_text(encoding="utf-8")
+    # Each exported task DDL is one block (joined with \n\n); don't split on ";" inside definitions
+    blocks = [b.strip() for b in content.split("\n\n") if b.strip() and not b.strip().startswith("--")]
+    if not blocks:
+        return False
+    cur = conn.cursor()
+    try:
+        for stmt in blocks:
+            cur.execute(stmt)
+            # Print task name if it looks like CREATE TASK "db"."schema"."name"
+            if "CREATE" in stmt and "TASK" in stmt:
+                print(f"  Created task from tasks/tasks.sql")
+        return True
+    finally:
+        cur.close()
+
+
 def main():
     conn, database, schema = get_connection()
+    tasks_file = _script_dir / "tasks" / "tasks.sql"
+
+    # Prefer duplicated tasks from export (tasks/tasks.sql)
+    if run_tasks_sql_file(conn, tasks_file):
+        conn.close()
+        print("Done. Tasks from tasks/tasks.sql were created (typically SUSPENDED). To run: ALTER TASK <name> RESUME;")
+        return
+
+    # Else create from TASK_DEFINITIONS
     warehouse = os.getenv("SNOWFLAKE_WAREHOUSE")
     if not warehouse:
-        raise SystemExit("SNOWFLAKE_WAREHOUSE is required in .env.")
+        raise SystemExit("SNOWFLAKE_WAREHOUSE is required in .env (or export tasks to tasks/tasks.sql first).")
 
     cur = conn.cursor()
     try:
@@ -91,7 +122,6 @@ def main():
             create_sql = generate_task_sql(database, schema, warehouse, task_name, schedule, sql)
             cur.execute(create_sql)
             print(f"  Created task: {schema}.{task_name} (schedule: {schedule})")
-        # Tasks are created suspended by default; optionally resume (user can run SHOW TASKS and ALTER TASK ... RESUME)
         print("Done. Tasks are created SUSPENDED. To run them: ALTER TASK <name> RESUME;")
     finally:
         cur.close()

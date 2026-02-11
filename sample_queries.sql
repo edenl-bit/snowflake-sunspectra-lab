@@ -1,6 +1,6 @@
--- Sample active queries to verify the lab after loading data.
--- Run these as active queries in Snowflake (Worksheets or your client) after load_data_to_snowflake.py.
--- Replace YOUR_SCHEMA with your actual schema name if needed, or use the schema you set in .env.
+-- All SunSpectra active queries and the complex query.
+-- Run these in Snowflake (Worksheets or your client) after load_data_to_snowflake.py.
+-- Same queries are listed in README "Verify and query" section.
 
 -- Row counts per table
 SELECT 'CUSTOMER' AS table_name, COUNT(*) AS row_count FROM CUSTOMER

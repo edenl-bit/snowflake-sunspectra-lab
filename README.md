@@ -1,6 +1,11 @@
 # SunSpectra Database Lab
 
-Create lab data in your own Snowflake account in a few steps. This repo includes CSV data and a loader—no credentials are stored.
+Create lab data in your own Snowflake account in a few steps. This repo includes **all SunSpectra data and all active queries**—no credentials are stored.
+
+**What the user gets**
+
+- **Data:** All 8 tables from SunSpectra: CUSTOMER, LINEITEM, NATION, ORDERS, PART, PARTSUPP, REGION, SUPPLIER (CSVs in `data/`, loaded by the script).
+- **Queries:** All active queries and the complex query from SunSpectra, in `sample_queries.sql` and in the "Verify and query" section below.
 
 ## Quick start (create lab data)
 
@@ -100,6 +105,17 @@ GROUP BY r.R_NAME, n.N_NAME
 ORDER BY region_name, nation_name;
 ```
 
+**Queries included (all from SunSpectra):**
+
+| # | Query | Description |
+|---|--------|-------------|
+| 1 | Row counts per table | Active query — verify load |
+| 2 | Regions and nation count | Active query — nations per region |
+| 3 | Sample from CUSTOMER | Active query — top 10 by balance |
+| 4 | Revenue by region | Complex query — REGION/NATION/CUSTOMER/ORDERS/LINEITEM |
+
+All of the above are in `sample_queries.sql` and can be run as active queries in Snowflake.
+
 ## Project structure
 
 | Path | Purpose |
@@ -107,5 +123,5 @@ ORDER BY region_name, nation_name;
 | `data/` | CSV files (one per table). Loaded by the script. |
 | `env.example` | Copy to `.env` and add your Snowflake credentials. |
 | `load_data_to_snowflake.py` | **Run this to create lab data** in your Snowflake. |
-| `sample_queries.sql` | Example queries to run after loading. |
+| `sample_queries.sql` | All SunSpectra active queries + complex query (run after loading). |
 | `export_snowflake_to_csv.py` | Optional: export from another Snowflake into `data/`. |

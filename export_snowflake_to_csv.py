@@ -47,14 +47,27 @@ def get_connection():
     return conn, database, schema
 
 
+def list_schemas(conn, database):
+    """Return list of schema names in the given database (excluding INFORMATION_SCHEMA)."""
+    cur = conn.cursor()
+    try:
+        cur.execute(f'SHOW SCHEMAS IN DATABASE "{database}"')
+        rows = cur.fetchall()
+        # name is index 1
+        return [row[1] for row in rows if row[1] != "INFORMATION_SCHEMA"] if rows else []
+    finally:
+        cur.close()
+
+
 def list_tables(conn, database, schema):
     """Return list of table names in the given database.schema."""
     cur = conn.cursor()
-    cur.execute("SHOW TABLES IN SCHEMA " + f'"{database}"."{schema}"')
-    rows = cur.fetchall()
-    cur.close()
-    # SHOW TABLES returns (created_on, name, ...); name is index 1
-    return [row[1] for row in rows] if rows else []
+    try:
+        cur.execute("SHOW TABLES IN SCHEMA " + f'"{database}"."{schema}"')
+        rows = cur.fetchall()
+        return [row[1] for row in rows] if rows else []
+    finally:
+        cur.close()
 
 
 def export_table_to_csv(conn, database, schema, table_name, out_path):
@@ -117,7 +130,35 @@ def main():
     data_dir.mkdir(exist_ok=True)
     schema_dir.mkdir(exist_ok=True)
 
-    conn, database, schema = get_connection()
+    conn, database, default_schema = get_connection()
+
+    # Export all schemas (509 tables across 15 schemas) when SNOWFLAKE_EXPORT_ALL_SCHEMAS=1
+    if os.getenv("SNOWFLAKE_EXPORT_ALL_SCHEMAS", "").strip().lower() in ("1", "true", "yes"):
+        schemas = list_schemas(conn, database)
+        if not schemas:
+            print("No schemas found in database.")
+            conn.close()
+            return
+        print(f"Exporting all tables from {len(schemas)} schemas in {database} to data/SCHEMA_NAME/")
+        total = 0
+        for schema_name in sorted(schemas):
+            schema_dir_per = schema_dir / schema_name
+            schema_dir_per.mkdir(parents=True, exist_ok=True)
+            out_dir = data_dir / schema_name
+            out_dir.mkdir(parents=True, exist_ok=True)
+            tables = list_tables(conn, database, schema_name)
+            for name in tables:
+                csv_path = out_dir / f"{name}.csv"
+                n = export_table_to_csv(conn, database, schema_name, name, csv_path)
+                print(f"  {schema_name}.{name}.csv -> {n} rows")
+                export_ddl(conn, database, schema_name, name, schema_dir_per)
+                total += 1
+        conn.close()
+        print(f"Done. Exported {total} tables across {len(schemas)} schemas.")
+        return
+
+    # Single-schema export
+    schema = default_schema
     tables = list_tables(conn, database, schema)
     if not tables:
         print("No tables found in the specified database/schema.")

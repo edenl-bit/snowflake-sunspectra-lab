@@ -122,26 +122,49 @@ def main():
     if not data_dir.exists():
         raise SystemExit("No data/ directory found. Run export_snowflake_to_csv.py first.")
 
-    conn, database, schema = get_connection()
-    ensure_schema(conn, database, schema)
+    conn, database, default_schema = get_connection()
 
-    csv_files = sorted(data_dir.glob("*.csv"))
-    if not csv_files:
-        raise SystemExit("No CSV files in data/.")
-
-    for csv_path in csv_files:
-        table_name = csv_path.stem
-        ddl_path = schema_dir / f"{table_name}.sql"
-        if ddl_path.exists():
-            run_ddl_file(conn, ddl_path, database, schema)
-        else:
-            create_table_from_csv(conn, database, schema, table_name, csv_path)
-
-        n = load_csv_into_table(conn, database, schema, table_name, csv_path)
-        print(f"  {table_name}: {n} rows loaded")
+    # Multi-schema: data/SCHEMA_NAME/*.csv → create each schema and load its tables
+    schema_dirs = sorted(d for d in data_dir.iterdir() if d.is_dir())
+    if schema_dirs:
+        total_tables = 0
+        for schema_path in schema_dirs:
+            schema_name = schema_path.name
+            csv_files = sorted(schema_path.glob("*.csv"))
+            if not csv_files:
+                continue
+            ensure_schema(conn, database, schema_name)
+            for csv_path in csv_files:
+                table_name = csv_path.stem
+                ddl_path = schema_dir / schema_name / f"{table_name}.sql"
+                if not ddl_path.exists():
+                    ddl_path = schema_dir / f"{table_name}.sql"
+                if ddl_path.exists():
+                    run_ddl_file(conn, ddl_path, database, schema_name)
+                else:
+                    create_table_from_csv(conn, database, schema_name, table_name, csv_path)
+                n = load_csv_into_table(conn, database, schema_name, table_name, csv_path)
+                print(f"  {schema_name}.{table_name}: {n} rows loaded")
+                total_tables += 1
+        print(f"Done. Loaded {total_tables} tables across {len(schema_dirs)} schemas.")
+    else:
+        # Single-schema: data/*.csv → use SNOWFLAKE_SCHEMA from .env
+        ensure_schema(conn, database, default_schema)
+        csv_files = sorted(data_dir.glob("*.csv"))
+        if not csv_files:
+            raise SystemExit("No CSV files in data/. Put CSVs in data/ or in data/SCHEMA_NAME/ per schema.")
+        for csv_path in csv_files:
+            table_name = csv_path.stem
+            ddl_path = schema_dir / f"{table_name}.sql"
+            if ddl_path.exists():
+                run_ddl_file(conn, ddl_path, database, default_schema)
+            else:
+                create_table_from_csv(conn, database, default_schema, table_name, csv_path)
+            n = load_csv_into_table(conn, database, default_schema, table_name, csv_path)
+            print(f"  {table_name}: {n} rows loaded")
+        print("Done.")
 
     conn.close()
-    print("Done.")
 
 
 if __name__ == "__main__":
